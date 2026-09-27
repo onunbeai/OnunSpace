@@ -1,0 +1,111 @@
+.aspect-ratio-select {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  padding: 0 9px;
+  border: 1px solid #333;
+  border-radius: 7px;
+  background: #242424;
+  color: #d7d7d7;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.aspect-ratio-select.is-compact {
+  width: auto;
+  height: 26px;
+  gap: 4px;
+  padding: 0 8px;
+  border-color: transparent;
+  border-radius: 99px;
+  background: #ffffff12;
+  font-size: 11px;
+}
+
+.aspect-ratio-select-value {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.aspect-ratio-select:hover,
+.aspect-ratio-select[data-state='open'] {
+  background: #333;
+  color: #fff;
+}
+
+.aspect-ratio-select:focus-visible {
+  outline: 0;
+  background: #414141;
+  border-color: #858585;
+  color: #fff;
+}
+
+.aspect-ratio-preview {
+  display: inline-flex;
+  flex: 0 0 22px;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  color: inherit;
+}
+
+.aspect-ratio-preview-shape {
+  box-sizing: border-box;
+  display: block;
+  flex: none;
+  border: 1.2px solid currentColor;
+  border-radius: 1.5px;
+  background: #ffffff0c;
+}
+
+.aspect-ratio-menu {
+  z-index: 120;
+  min-width: 128px;
+  max-height: var(--radix-dropdown-menu-content-available-height);
+  padding: 5px;
+  overflow-y: auto;
+  border: 1px solid #343434;
+  border-radius: 9px;
+  background: #1b1b1b;
+  color: #cecece;
+  box-shadow: 0 12px 32px #0006;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.aspect-ratio-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 3px 7px;
+  border-radius: 5px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.aspect-ratio-option[data-state='checked'] {
+  background: #282828;
+  color: #fff;
+}
+
+.aspect-ratio-option[data-highlighted] {
+  outline: 0;
+  background: #3b3b3b;
+  color: #fff;
+}
+
+.aspect-ratio-option-check {
+  display: flex;
+  justify-content: flex-end;
+  width: 17px;
+  margin-left: auto;
+}

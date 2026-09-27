@@ -1,0 +1,5 @@
+import{test}from'node:test';import assert from'node:assert/strict';import{mergeProject}from'../shared/mergeProject';import{defaultScene}from'../shared/motion';import type{Project}from'../shared/project';
+const base:Project={id:'merge-test',name:'Original',revision:1,nodes:[],edges:[],motion:structuredClone(defaultScene)};
+test('merges disjoint local and MCP edits without overwriting remote scene',()=>{const local={...base,name:'Local'};const remote={...base,revision:2,motion:{...base.motion,name:'MCP scene'}};const result=mergeProject(base,local,remote);assert.equal(result.name,'Local');assert.equal(result.motion.name,'MCP scene');assert.equal(result.revision,2);});
+test('detects simultaneous edits to the same property',()=>{assert.throws(()=>mergeProject(base,{...base,name:'Local'},{...base,name:'Remote'}),/Conflito de edição/);});
+test('merges two agents editing separate layers',()=>{const local=structuredClone(base),remote=structuredClone(base);local.motion.layers[0].x=300;remote.motion.layers[1].y=600;const merged=mergeProject(base,local,remote);assert.equal(merged.motion.layers[0].x,300);assert.equal(merged.motion.layers[1].y,600);});

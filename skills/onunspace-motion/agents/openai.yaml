@@ -1,0 +1,4 @@
+interface:
+  display_name: "OnunSpace Motion"
+  short_description: "Create and edit native or GSAP motion in OnunSpace"
+  default_prompt: "Use $onunspace-motion to refine the current OnunSpace composition and verify it in the preview."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "OnunSpace Motion Review"
+  short_description: "Verify timelines, previews and local motion exports"
+  default_prompt: "Use $onunspace-motion-review to diagnose the current motion issue and verify the correction in an isolated project."

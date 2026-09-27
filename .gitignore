@@ -1,0 +1,66 @@
+# Dependencies and generated builds
+node_modules/
+dist/
+dist-*/
+build/
+release/
+coverage/
+*.tsbuildinfo
+
+# Environment and credentials (only the empty template is public)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+credentials.*.json
+secrets.json
+secrets.*.json
+.npmrc
+.netrc
+
+# Personal projects and local runtime data
+.onun/
+.data/
+runtime/
+private/
+backups/
+renders/
+*.onun
+*.onun.zip
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+
+# QA evidence, caches, local agents and downloaded release archives
+artifacts/
+.figma-app/
+qa/
+test-results/
+playwright-report/
+playwright/.cache/
+.cache/
+.tmp/
+tmp/
+.codex/
+.agents/
+.agent/
+public/downloads/
+docs/design-evidence.md
+*.log
+*.har
+*.trace
+__pycache__/
+*.pyc
+
+# Machine-specific editor and OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo

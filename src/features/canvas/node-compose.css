@@ -1,0 +1,168 @@
+.generator-node .node-compose {
+  padding: 16px;
+}
+
+.generator-node .node-compose .node-references {
+  min-height: 32px;
+  gap: 6px;
+  align-items: center;
+}
+
+.generator-node .node-compose .reference-add,
+.generator-node .node-compose .node-references > span {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+}
+
+.generator-node .node-compose .reference-add {
+  margin-right: 0;
+  border-radius: 50%;
+}
+
+.generator-node .node-compose .node-references > span {
+  border-radius: 8px;
+}
+
+.generator-node .node-compose .node-references > small {
+  min-width: 0;
+  margin-left: 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.generator-node .node-compose .node-references .node-media {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.generator-node .node-compose > textarea {
+  height: 94px;
+  min-height: 74px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid #3a3a3a;
+  border-radius: 12px;
+  background: #222;
+  line-height: 1.5;
+}
+
+.generator-node .node-compose .node-options {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.generator-node .node-compose .model-trigger,
+.generator-node .node-compose .aspect-ratio-select.is-compact {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid #414141;
+  border-radius: 999px;
+  background: #353535;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.generator-node .node-compose .model-trigger {
+  flex: 1 1 0;
+  min-width: 0;
+  gap: 7px;
+  text-align: left;
+}
+
+.generator-node .node-compose .model-trigger > span:not(.provider-abbreviation) {
+  flex: 1;
+  min-width: 0;
+}
+
+.generator-node .node-compose .model-trigger > .provider-abbreviation,
+.generator-node .node-compose .model-trigger > img,
+.generator-node .node-compose .model-trigger > svg {
+  flex: none;
+}
+
+.generator-node .node-compose .aspect-ratio-select.is-compact {
+  flex: 0 0 auto;
+  gap: 5px;
+  min-width: 84px;
+}
+
+.generator-node .node-compose .aspect-ratio-select-value {
+  flex: 0 0 auto;
+}
+
+.generator-node .node-compose .node-compose-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+  margin-top: 12px;
+}
+
+.generator-node .node-compose .resolution-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  height: 32px;
+  padding-left: 2px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.generator-node .node-compose .quality-select {
+  flex: 0 0 auto;
+  min-width: 65px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.generator-node .node-compose .quality-select .select-control {
+  height: 26px;
+  min-height: 26px;
+  padding: 0 9px;
+  gap: 6px;
+  border: 1px solid #414141;
+  border-radius: 999px;
+  background: #353535;
+  color: #d6d6d6;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.generator-node .node-compose .quality-select .select-control:hover:not(:disabled) {
+  background: #414141;
+}
+
+.generator-node .node-compose .quality-select .select-control svg {
+  width: 12px;
+  height: 12px;
+}
+
+.generator-node .node-compose .generate-button {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 82px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 13px;
+  border-radius: 999px;
+  line-height: 1;
+}
+
+.node-compose-footer{gap:8px;flex-wrap:wrap}.node-compose-footer .resolution-label{flex-wrap:wrap;min-width:0;gap:7px}.node-compose-footer .generate-button{flex-shrink:0;margin-left:auto}.cancel-generation-button{background:#363636;color:#eee;border:1px solid #565656}.cancel-generation-button:hover{background:#454545}.duration-select{min-width:60px}
