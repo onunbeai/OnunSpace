@@ -56,7 +56,7 @@ Browse the model catalog, organize project media, and reopen saved work.
 Install **Node.js 22.16 or newer**, npm, and Git. No Onun account is required for the local editor.
 
 ```sh
-git clone https://github.com/matusaelhorch/OnunSpace.git
+git clone https://github.com/onunbeai/OnunSpace.git
 cd OnunSpace
 npm ci
 npm run dev
