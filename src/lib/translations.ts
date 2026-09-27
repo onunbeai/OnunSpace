@@ -1,5 +1,7 @@
+import { motionEnglish } from './motionTranslations'
 /** UI copy only. Project titles, prompts, media and authored scene content are never translation keys. */
 export const english: Record<string, string> = {
+  ...motionEnglish,
   "Baixar projeto .onun": "Download .onun project",
   "Criando arquivo…": "Creating archive…",
 

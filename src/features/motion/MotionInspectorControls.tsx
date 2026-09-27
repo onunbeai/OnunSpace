@@ -7,18 +7,19 @@ import { MotionColorPicker } from './MotionColorPicker'
 
 export function NumericField({ label, value, onChange, min, max, step = 1, suffix }: { label: string; value: number; onChange: (value: number) => void; min?: number; max?: number; step?: number; suffix?: string }) {
   const { t } = useI18n()
-  const [draft, setDraft] = useState(String(value))
+  const [draft, setDraft] = useState(String(Number(value.toFixed(6))))
   const skipCommit = useRef(false)
-  useEffect(() => setDraft(String(value)), [value])
+  useEffect(() => setDraft(String(Number(value.toFixed(6)))), [value])
   const commit = () => {
     if (skipCommit.current) { skipCommit.current = false; return }
-    if (!draft.trim() || !Number.isFinite(Number(draft))) { setDraft(String(value)); return }
+    if (draft === String(Number(value.toFixed(6)))) return
+    if (!draft.trim() || !Number.isFinite(Number(draft))) { setDraft(String(Number(value.toFixed(6)))); return }
     const next = Math.min(max ?? Infinity, Math.max(min ?? -Infinity, Number(draft)))
     setDraft(String(next))
     if (next !== value) onChange(next)
   }
   const accessibleLabel = ({ X: 'Posição X', Y: 'Posição Y', W: 'Largura', H: 'Altura', '%': 'Opacidade' } as Record<string, string>)[label] || label
-  return <label className="motion-value"><span>{t(label)}</span><Tooltip content={t(accessibleLabel)}><input aria-label={t(accessibleLabel)} type="number" value={draft} min={min} max={max} step={step} onChange={event => setDraft(event.target.value)} onBlur={commit} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur() } if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); skipCommit.current = true; setDraft(String(value)); event.currentTarget.blur() } }} /></Tooltip>{suffix && <span className="motion-field-unit">{suffix}</span>}</label>
+  return <label className="motion-value"><span>{t(label)}</span><Tooltip content={t(accessibleLabel)}><input aria-label={t(accessibleLabel)} type="number" value={draft} min={min} max={max} step={step} onChange={event => setDraft(event.target.value)} onBlur={commit} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur() } if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); skipCommit.current = true; setDraft(String(Number(value.toFixed(6)))); event.currentTarget.blur() } }} /></Tooltip>{suffix && <span className="motion-field-unit">{suffix}</span>}</label>
 }
 
 export function InspectorSelect({ label, value, options, onChange, className = '' }: { label: string; value: string; options: { value: string; label: string }[]; onChange: (value: string) => void; className?: string }) {

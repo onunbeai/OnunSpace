@@ -2,12 +2,14 @@ import { useId, useRef, type KeyboardEvent } from 'react'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
 import { Tooltip } from '../../components/ui'
 import { useI18n } from '../../lib/i18n'
-import { motionEases, type MotionEase, type MotionLayer, type MotionScene } from '../../../shared/motion'
+import { motionEases, type MotionKeyframe, type MotionEase, type MotionLayer, type MotionScene } from '../../../shared/motion'
 import { Icon } from '../../components/Icon'
 import type { KeyframeSelection } from './timelineSelection'
 import { ColorField, FontFamilyField, InspectorSelect, NumericField } from './MotionInspectorControls'
 import { MotionLayerCode, type MotionLayerDraftCache } from './MotionLayerCode'
 import './motion-inspector.css'
+import { MotionPresets } from './MotionPresets'
+import { motionKeyframeValues } from './motionEditing'
 
 export interface MotionInspectorProps {
   mode: 'style' | 'motion'
@@ -18,6 +20,8 @@ export interface MotionInspectorProps {
   onLayerChange: (patch: Partial<MotionLayer>) => void
   time: number
   onKeyframe: () => void
+  onKeyframeChange?: (patch: Partial<MotionKeyframe>) => void
+  onApplyPreset?: (patch: Partial<MotionLayer>) => void
   onClose?: () => void
   selection?: KeyframeSelection[]
   onClearSelection?: () => void
@@ -25,9 +29,11 @@ export interface MotionInspectorProps {
   onEditSceneCode?: () => void
 }
 
+const easeNames: Record<MotionEase, string> = { none: 'Linear', 'power2.out': 'Saída suave', 'power3.inOut': 'Entrada e saída', 'expo.out': 'Desaceleração forte', 'back.out(1.4)': 'Retorno suave' }
+
 function EaseControl({ value, label, onChange, selection = false }: { value: string; label: string; onChange: (ease: MotionEase) => void; selection?: boolean }) {
   const { t } = useI18n()
-  return <Dropdown.Root><Tooltip content={label}><Dropdown.Trigger aria-label={label} className={'motion-ease' + (selection ? ' motion-selection-ease' : '')}><span>{t('Curva')}</span><span>{value}</span><Icon name="chevron-down" size={12}/></Dropdown.Trigger></Tooltip><Dropdown.Portal><Dropdown.Content className="motion-dropdown motion-style-menu" align="end" sideOffset={5}>{motionEases.map(ease => <Dropdown.Item key={ease} onSelect={() => onChange(ease)} className="motion-dropdown-item">{ease}{value === ease && <Icon name="check" size={13}/>}</Dropdown.Item>)}</Dropdown.Content></Dropdown.Portal></Dropdown.Root>
+  return <Dropdown.Root><Tooltip content={label}><Dropdown.Trigger aria-label={label} className={'motion-ease' + (selection ? ' motion-selection-ease' : '')}><span>{t('Curva')}</span><span>{t(easeNames[value as MotionEase] ?? value)}</span><Icon name="chevron-down" size={12}/></Dropdown.Trigger></Tooltip><Dropdown.Portal><Dropdown.Content className="motion-dropdown motion-style-menu" align="end" sideOffset={5}>{motionEases.map(ease => <Dropdown.Item key={ease} onSelect={() => onChange(ease)} className="motion-dropdown-item">{t(easeNames[ease])}{value === ease && <Icon name="check" size={13}/>}</Dropdown.Item>)}</Dropdown.Content></Dropdown.Portal></Dropdown.Root>
 }
 
 function LayerStyle({ layer, scene, onLayerChange, drafts }: { layer: MotionLayer; scene: MotionScene; onLayerChange: (patch: Partial<MotionLayer>) => void; drafts: MotionLayerDraftCache }) {
@@ -68,7 +74,7 @@ function LayerStyle({ layer, scene, onLayerChange, drafts }: { layer: MotionLaye
   </>
 }
 
-export function MotionInspector({ scene, layer, onChange, onLayerChange, time, onKeyframe, onClose, selection = [], onClearSelection, onSelectionEase, mode = 'style', onModeChange, onEditSceneCode }: MotionInspectorProps) {
+export function MotionInspector({ scene, layer, onChange, onLayerChange, time, onKeyframe, onClose, selection = [], onClearSelection, onSelectionEase, mode = 'style', onModeChange, onEditSceneCode, onKeyframeChange, onApplyPreset }: MotionInspectorProps) {
   const { t } = useI18n()
   const id = useId()
   const draftCache = useRef<{ sceneId: string; drafts: MotionLayerDraftCache }>({ sceneId: scene.id, drafts: new Map() })
@@ -76,6 +82,7 @@ export function MotionInspector({ scene, layer, onChange, onLayerChange, time, o
   const frames = selection.flatMap(item => { const selectedLayer = scene.layers.find(candidate => candidate.id === item.layerId); const frame = selectedLayer?.keyframes[item.index]; return selectedLayer && frame ? [{ layer: selectedLayer, frame }] : [] })
   const eases = [...new Set(frames.map(({ layer, frame }) => frame.ease ?? layer.ease))]
   const selectedLayers = [...new Set(frames.map(({ layer }) => layer))]
+  const singleValues = frames.length === 1 ? motionKeyframeValues(frames[0].layer, selection[0].index) : undefined
   const times = frames.map(({ frame }) => frame.time)
   const moveTab = (event: KeyboardEvent<HTMLButtonElement>) => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
@@ -92,8 +99,18 @@ export function MotionInspector({ scene, layer, onChange, onLayerChange, time, o
         {!scene.customCode && (layer ? <LayerStyle layer={layer} scene={scene} onLayerChange={onLayerChange} drafts={draftCache.current.drafts}/> : <div className="motion-no-layer"><Icon name="layers" size={28}/><p>{t('Selecione uma camada para editar suas propriedades.')}</p></div>)}
         <section className="motion-scene-settings"><h3>{t('Cena')}</h3><ColorField label={t('Fundo da cena')} value={scene.background} onChange={background => onChange({ ...scene, background })}/></section>
       </div><div hidden={mode !== 'motion'}>
-        {!scene.customCode && frames.length > 0 && <section className="motion-keyframe-properties"><div className="motion-keyframe-heading"><span className="motion-diamond"/><strong>{t('{count} keyframes', { count: frames.length })}</strong><Tooltip content={t('Limpar seleção')}><button type="button" aria-label={t('Limpar seleção')} onClick={onClearSelection}><Icon name="close" size={13}/></button></Tooltip></div><div className="motion-keyframe-range"><span>{t('{count} camadas', { count: selectedLayers.length })}</span><span>{Math.min(...times).toFixed(2)}{times.length > 1 ? '–' + Math.max(...times).toFixed(2) : ''} s</span></div><EaseControl label={t('Curva da seleção')} value={eases.length === 1 ? eases[0] : t('Misto')} selection onChange={ease => onSelectionEase?.(ease)}/>{frames.length > 1 && <div className="motion-selected-layer-list">{selectedLayers.map(selectedLayer => <div key={selectedLayer.id}><Icon name={selectedLayer.type === 'text' ? 'text' : 'layers'} size={12}/><span>{selectedLayer.name}</span><span>{frames.filter(item => item.layer.id === selectedLayer.id).length}</span></div>)}</div>}</section>}
-        {!scene.customCode && layer && <section><h3>{t('Animação')}</h3><div className="motion-field-grid"><NumericField label="Início" value={layer.start} min={0} max={layer.end} step={.1} onChange={start => onLayerChange({ start })}/><NumericField label="Fim" value={layer.end} min={layer.start} max={scene.duration} step={.1} onChange={end => onLayerChange({ end })}/></div><EaseControl label={t('Curva de animação')} value={layer.ease} onChange={ease => onLayerChange({ ease })}/><Tooltip content={t('Adicionar keyframe')}><button type="button" className="motion-keyframe-add" onClick={onKeyframe}><span className="motion-diamond"/>{t('Adicionar keyframe')}<span>{time.toFixed(2)}s</span></button></Tooltip></section>}
+        {!scene.customCode && frames.length > 0 && <section className="motion-keyframe-properties"><div className="motion-keyframe-heading"><span className="motion-diamond"/><strong>{t(frames.length === 1 ? '1 keyframe' : '{count} keyframes', { count: frames.length })}</strong><Tooltip content={t('Limpar seleção')}><button type="button" aria-label={t('Limpar seleção')} onClick={onClearSelection}><Icon name="close" size={13}/></button></Tooltip></div><div className="motion-keyframe-range"><span>{t(selectedLayers.length === 1 ? '1 camada' : '{count} camadas', { count: selectedLayers.length })}</span><span>{Math.min(...times).toFixed(2)}{times.length > 1 ? '–' + Math.max(...times).toFixed(2) : ''} s</span></div>{frames.length === 1 && singleValues && onKeyframeChange && <div className="motion-keyframe-fields">
+          <NumericField label="Tempo do keyframe" value={frames[0].frame.time} min={0} max={scene.duration} step={1 / scene.fps} suffix="s" onChange={time => onKeyframeChange({ time })}/>
+          <div className="motion-field-grid">
+            <NumericField label="X" value={singleValues.x!} min={-36000} max={36000} onChange={x => onKeyframeChange({ x })}/>
+            <NumericField label="Y" value={singleValues.y!} min={-36000} max={36000} onChange={y => onKeyframeChange({ y })}/>
+            <NumericField label="Rotação" value={singleValues.rotation!} min={-36000} max={36000} onChange={rotation => onKeyframeChange({ rotation })}/>
+            <NumericField label="Escala" value={singleValues.scale!} min={.001} max={100} step={.05} onChange={scale => onKeyframeChange({ scale })}/>
+            <NumericField label="%" value={Math.round(singleValues.opacity! * 100)} min={0} max={100} onChange={opacity => onKeyframeChange({ opacity: opacity / 100 })}/>
+          </div><p className="motion-style-note">{t('Valores deste keyframe. Use Estilo para editar a camada inteira.')}</p>
+        </div>}<EaseControl label={t('Curva da seleção')} value={eases.length === 1 ? eases[0] : t('Misto')} selection onChange={ease => onSelectionEase?.(ease)}/>{frames.length > 1 && <div className="motion-selected-layer-list">{selectedLayers.map(selectedLayer => <div key={selectedLayer.id}><Icon name={selectedLayer.type === 'text' ? 'text' : 'layers'} size={12}/><span>{selectedLayer.name}</span><span>{frames.filter(item => item.layer.id === selectedLayer.id).length}</span></div>)}</div>}</section>}
+        {!scene.customCode && layer && <section><h3>{t('Animação')}</h3><div className="motion-field-grid"><NumericField label="Início" value={layer.start} min={0} max={layer.end} step={.1} onChange={start => onLayerChange({ start })}/><NumericField label="Fim" value={layer.end} min={layer.start} max={scene.duration} step={.1} onChange={end => onLayerChange({ end })}/></div><EaseControl label={t('Curva de animação')} value={layer.ease} onChange={ease => onLayerChange({ ease })}/><Tooltip content={t('Adicionar keyframe')}><button type="button" className="motion-keyframe-add" disabled={layer.keyframes.length >= 100 && !layer.keyframes.some(frame => Math.abs(frame.time - time) < .5 / scene.fps)} onClick={onKeyframe}><span className="motion-diamond"/>{t('Adicionar keyframe')}<span>{time.toFixed(2)}s</span></button></Tooltip></section>}
+        {!scene.customCode && layer && onApplyPreset && <MotionPresets key={layer.id} layer={layer} sceneDuration={scene.duration} onApply={onApplyPreset}/>}
         {!scene.customCode && !layer && !frames.length && <div className="motion-no-layer"><Icon name="layers" size={28}/><p>{t('Selecione uma camada para editar suas propriedades.')}</p></div>}
         <section className="motion-scene-settings"><h3>{t('Cena')}</h3><div className="motion-field-grid"><NumericField label="Duração" value={scene.duration} min={.1} max={120} step={.5} onChange={duration => onChange({ ...scene, duration, layers: scene.layers.map(item => ({ ...item, start: Math.min(item.start, duration), end: Math.min(item.end, duration), keyframes: item.keyframes.filter(frame => frame.time <= duration) })) })}/><NumericField label="FPS" value={scene.fps} min={1} max={60} onChange={fps => onChange({ ...scene, fps: Math.round(fps) })}/></div></section>
       </div>

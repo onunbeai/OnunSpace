@@ -1,0 +1,20 @@
+.motion-preset-description{display:flex;align-items:center;gap:8px;margin:10px 0;color:#a8a8a8;font-size:11px;line-height:1.5}
+.motion-preset-preview{display:grid;place-items:center;flex:none;width:24px;height:24px;overflow:hidden}
+.motion-preset-sample{display:block;width:14px;height:14px;border-radius:3px;background:#aaa;animation-duration:var(--motion-preset-duration,.8s);animation-timing-function:cubic-bezier(.22,1,.36,1);animation-fill-mode:both}
+.motion-preset-duration .motion-value>span{max-width:none;flex:none}
+.motion-preset-duration .motion-value input{min-width:34px}
+.motion-presets>.motion-inspector-action{margin-top:10px}
+.motion-preset-note,.motion-preset-unavailable{margin:9px 0 0;color:#a8a8a8;font-size:11px;line-height:1.5}
+.motion-preset-fade-in{animation-name:motion-preset-fade-in}
+.motion-preset-fade-out{animation-name:motion-preset-fade-out;animation-timing-function:ease-in-out}
+.motion-preset-slide-up{animation-name:motion-preset-slide-up}
+.motion-preset-scale-in{animation-name:motion-preset-scale-in}
+.motion-preset-float{animation-name:motion-preset-float;animation-timing-function:ease-in-out}
+.motion-preset-spin{animation-name:motion-preset-spin;animation-timing-function:linear}
+@keyframes motion-preset-fade-in{from{opacity:0}to{opacity:1}}
+@keyframes motion-preset-fade-out{from{opacity:1}to{opacity:0}}
+@keyframes motion-preset-slide-up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes motion-preset-scale-in{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+@keyframes motion-preset-float{0%,100%{transform:translateY(2px)}50%{transform:translateY(-3px)}}
+@keyframes motion-preset-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.motion-preset-sample{animation:none}}

@@ -201,7 +201,7 @@ export default function App() {
             redo();
         else
             undo();
-    } if ((e.metaKey || e.ctrlKey) && e.key === 'd' && selected) {
+    } if ((e.metaKey || e.ctrlKey) && e.key === 'd' && selected && mode === 'canvas') {
         e.preventDefault();
         action(selected, 'duplicate');
     } if (e.key === 'Delete' || e.key === 'Backspace') {

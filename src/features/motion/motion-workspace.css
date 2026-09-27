@@ -1,0 +1,12 @@
+/* Additions use the existing Motion controls; the original chrome stays in motion.css. */
+.motion-stage-stack{will-change:transform}
+.motion-stage iframe{will-change:transform}
+.motion-layer-menu{width:26px;height:27px;display:grid;place-items:center;flex:none;border-radius:50%;margin-right:2px;color:#999;opacity:0}
+.motion-layer-row:hover .motion-layer-menu,.motion-layer-row.is-selected .motion-layer-menu,.motion-layer-row:focus-within .motion-layer-menu{opacity:1}
+.motion-canvas-actions .motion-format-trigger{font-variant-numeric:tabular-nums;white-space:nowrap;font-size:9px;gap:5px}
+.motion-format-trigger>svg{color:#999}
+.motion-keyframe-fields{display:flex;flex-direction:column;gap:8px}
+.motion-keyframe-fields>.motion-style-note{margin:2px 0}
+.motion-layer-empty{padding:18px 14px;color:#a0a0a0;font-size:11px;text-align:center}
+@media(max-width:1200px){.motion-code-trigger>span{display:none}}
+@media(max-width:850px){.motion-canvas-actions .motion-format-trigger{font-size:9px}.motion-export-trigger>span{display:none}}

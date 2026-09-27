@@ -5,11 +5,14 @@ type Props = {
   title: string
   frameRef: RefObject<HTMLIFrameElement | null>
   time: number
-  onReady: (error: string) => void
+  width: number
+  height: number
+  scale: number
+  onReady: (error: string, document: string) => void
 }
 
 /** Keep the painted document until its replacement has loaded and sought to the current playhead. */
-export function MotionPreview({ document, title, frameRef, time, onReady }: Props) {
+export function MotionPreview({ document, title, frameRef, time, width, height, scale, onReady }: Props) {
   const [visibleDocument, setVisibleDocument] = useState('')
   const frames = useRef(new Map<string, HTMLIFrameElement>())
   const latest = useRef({ document, time, onReady })
@@ -39,7 +42,7 @@ export function MotionPreview({ document, title, frameRef, time, onReady }: Prop
 
   useLayoutEffect(() => {
     frameRef.current = frames.current.get(visibleDocument) ?? null
-    if (frameRef.current) latest.current.onReady(readyError.current)
+    if (frameRef.current) latest.current.onReady(readyError.current, visibleDocument)
     return () => { frameRef.current = null }
   }, [visibleDocument, frameRef])
 
@@ -54,6 +57,6 @@ export function MotionPreview({ document, title, frameRef, time, onReady }: Prop
     aria-hidden={source !== visibleDocument}
     tabIndex={-1}
     data-preview-ready={source === visibleDocument}
-    style={{ visibility: source === visibleDocument ? 'visible' : 'hidden' }}
+    style={{ visibility: source === visibleDocument ? 'visible' : 'hidden', width, height, transform: `scale(${scale})`, transformOrigin: '0 0' }}
   />)}</>
 }
