@@ -65,9 +65,9 @@
   height: 32px;
   min-height: 32px;
   padding: 0 11px;
-  border: 1px solid #414141;
+  border: 0;
   border-radius: 999px;
-  background: #353535;
+  background: #333;
   font-size: 11px;
   line-height: 1;
 }
@@ -101,10 +101,10 @@
 }
 
 .generator-node .node-compose .node-compose-footer {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   min-height: 32px;
   margin-top: 12px;
 }
@@ -122,22 +122,22 @@
 
 .generator-node .node-compose .quality-select {
   flex: 0 0 auto;
-  min-width: 65px;
+  min-width: 58px;
   margin: 0;
   padding: 0;
   border: 0;
 }
 
 .generator-node .node-compose .quality-select .select-control {
-  height: 26px;
-  min-height: 26px;
+  height: 32px;
+  min-height: 32px;
   padding: 0 9px;
   gap: 6px;
-  border: 1px solid #414141;
+  border: 0;
   border-radius: 999px;
-  background: #353535;
+  background: #333;
   color: #d6d6d6;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1;
 }
 
@@ -165,4 +165,12 @@
   line-height: 1;
 }
 
-.node-compose-footer{gap:8px;flex-wrap:wrap}.node-compose-footer .resolution-label{flex-wrap:wrap;min-width:0;gap:7px}.node-compose-footer .generate-button{flex-shrink:0;margin-left:auto}.cancel-generation-button{background:#363636;color:#eee;border:1px solid #565656}.cancel-generation-button:hover{background:#454545}.duration-select{min-width:60px}
+.node-compose-footer .resolution-label{flex-wrap:nowrap;min-width:0;gap:6px}
+.node-compose-footer .generate-button{flex-shrink:0;margin-left:auto}
+.cancel-generation-button{background:#363636;color:#eee;border:0}
+.cancel-generation-button:hover{background:#454545}
+.generator-node .node-compose .duration-select{min-width:54px}
+.inspector-video-options{display:flex;align-items:flex-end;gap:8px}
+.inspector-video-options>.form-field{flex:1;min-width:0;margin:0}
+.node-inspector .quality-select{border:0;padding:0;margin:0;min-width:0}
+.inspector-video-options>.audio-toggle{margin-bottom:2px}

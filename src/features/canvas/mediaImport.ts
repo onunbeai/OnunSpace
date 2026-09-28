@@ -4,6 +4,7 @@ import { estimateNodeHeight, placeCanvasNode } from '../../../shared/canvasLayou
 export type CanvasImportPoint = { x: number; y: number }
 /** Browser File names can be empty or exceed the project title limit. */
 export function importedMediaName(name: string, fallback = 'Imagem colada'): string {
+  // eslint-disable-next-line no-control-regex -- Imported filenames must not retain NUL bytes.
   return name.replace(/[\r\n\x00]/g, '').trim().slice(0, 200) || fallback
 }
 export function canvasPoint(client: CanvasImportPoint, rect: Pick<DOMRect, 'left' | 'top'>, view: { x: number; y: number; scale: number }): CanvasImportPoint {

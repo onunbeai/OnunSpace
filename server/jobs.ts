@@ -5,7 +5,7 @@ import type {CanvasNode,Project} from '../shared/project.js';
 import {placeCanvasNode} from '../shared/canvasLayout.js';
 import {JobJournal} from './jobJournal.js';
 import { validateMotionScene } from '../shared/motion.js';
-import { HttpError } from './errors.js';
+import { HttpError, transientGenerationError } from './errors.js';
 import { generationSchema, type GenerationRequest, Providers } from './providers.js';
 import { ProjectStore } from './store.js';
 
@@ -60,6 +60,7 @@ export class GenerationJobs {
   private ready:Promise<void>;
   private storageUnavailable=false;
   private disposed=false;
+  private creating:Promise<unknown>=Promise.resolve();
   private pollInterval:number;
   private cancelTimeout:number;
   constructor(private providers: Providers, private projects: ProjectStore, readonly assetDirectory: string,options:{pollIntervalMs?:number;cancelTimeoutMs?:number}={}) {
@@ -126,8 +127,9 @@ export class GenerationJobs {
           await this.journal.save(job);await this.updateNode(job);if(job.status==='complete'){job.materialized=true;await this.journal.save(job);}
         }
       }catch(error){
-        if(!this.isActive(job))return;
-        const transient=error instanceof HttpError?(['provider_error','provider_invalid_response','download_failed'].includes(error.code)&&(error.status===429||error.status>=500)):error instanceof Error&&['TimeoutError','AbortError','TypeError'].includes(error.name);
+        if(this.disposed||this.isCancelled(job)||job.controller.signal.aborted)return;
+        if(job.status==='complete'){await this.fail(job,error);return;}
+        const transient=transientGenerationError(error);
         if(transient&&Date.now()-Date.parse(job.createdAt)<=1800000){job.pollFailures=(job.pollFailures??0)+1;job.error='O provedor demorou para responder. O acompanhamento continuará automaticamente.';await this.journal.save(job).catch(()=>{});}
         else await this.fail(job,error);
       }
@@ -141,10 +143,11 @@ export class GenerationJobs {
   }
 
   public(job: GenerationJob) {
-    return { id: job.id, projectId:job.request.projectId, nodeId:job.request.nodeId, kind: job.kind, provider: job.provider, status: job.status, createdAt: job.createdAt, outputs: job.outputs, ...(job.error ? { error: job.error } : {}), ...(job.scene ? { scene: job.scene } : {}) };
+    return { id: job.id, projectId:job.request.projectId, nodeId:job.request.nodeId, kind: job.kind, provider: job.provider, status: job.status, createdAt: job.createdAt, outputs: job.outputs, ...(job.status==='complete'?{materialized:job.materialized===true}:{}), ...(job.error ? { error: job.error } : {}), ...(job.scene ? { scene: job.scene } : {}) };
   }
 
-  async create(request: GenerationRequest) {
+  create(request:GenerationRequest){const pending=this.creating.catch(()=>{}).then(()=>this.createNow(request));this.creating=pending;return pending;}
+  private async createNow(request: GenerationRequest) {
     await this.ready;if(this.storageUnavailable)throw new HttpError(500,'Não foi possível abrir o histórico local de gerações.','generation_storage_unavailable');
     this.providers.assertConfigured(request.provider);
     if (request.projectId) {
@@ -154,6 +157,11 @@ export class GenerationJobs {
     if (request.requestId) {
       const existing = this.jobs.get(request.requestId);
       if (existing) return this.public(existing);
+    }
+    // Resume an accepted job when a stale error card is retried. Never charge twice.
+    if(request.projectId&&request.nodeId){
+      const active=[...this.jobs.values()].find(job=>job.remoteId&&['queued','running'].includes(job.status)&&job.request.projectId===request.projectId&&job.request.nodeId===request.nodeId);
+      if(active)return this.public(active);
     }
     request = { ...request, references: await Promise.all(request.references.map(async reference => {
       if (!reference.startsWith('/api/')) return reference;
@@ -240,7 +248,14 @@ export class GenerationJobs {
       await this.journal.save(job);
       await this.updateNode(job);
       if(job.status==='complete'){job.materialized=true;await this.journal.save(job);}
-    } catch (error) { await this.fail(job, error); }
+    } catch (error) {
+      if(job.remoteId&&this.isActive(job)&&transientGenerationError(error)){
+        job.pollFailures=(job.pollFailures??0)+1;
+        job.error='A geração foi enviada. O acompanhamento será retomado automaticamente.';
+        await this.journal.save(job).catch(()=>{});
+        await this.updateNode(job).catch(()=>{});
+      }else await this.fail(job,error);
+    }
     finally { job.request.references = []; }
   }
 
@@ -259,7 +274,8 @@ export class GenerationJobs {
   private async applyRemote(job: GenerationJob, result: Record<string, unknown>) {
     if(!this.isActive(job))return;
     const status = String(result.status);
-    if (['failed', 'nsfw', 'expired', 'cancelled', 'canceled'].includes(status)) throw new HttpError(502, 'O provedor encerrou a geração sem um resultado. Consulte o histórico da sua conta.', 'generation_failed');
+    if (status === 'nsfw') throw new HttpError(422, 'O provedor bloqueou esta geração na moderação de conteúdo. Consulte o histórico da sua conta.', 'generation_moderated');
+    if (['failed', 'expired', 'cancelled', 'canceled'].includes(status)) throw new HttpError(502, 'O provedor encerrou a geração sem um resultado. Consulte o histórico da sua conta.', 'generation_failed');
     if (status !== 'completed') return;
     let outputs:string[];
     if (job.provider === 'openrouter') {
@@ -285,6 +301,10 @@ export class GenerationJobs {
     const job=this.jobs.get(id);if(!job)throw new HttpError(404,'Geração não encontrada.','job_not_found');
     if(job.submission&&['complete','error'].includes(job.status))await job.submission;
     if(job.polling&&job.status!=='cancelled')await job.polling;
+    if(job.status==='complete'&&!job.materialized&&job.outputs.length){
+      try{await this.updateNode(job);job.materialized=true;job.error=undefined;await this.journal.save(job);}
+      catch{job.materialized=false;job.error='A geração foi concluída, mas não foi possível atualizar o projeto. O resultado permanece salvo no histórico local.';await this.journal.save(job).catch(()=>{});}
+    }
     return this.public(job);
   }
   async list(projectId?:string){await this.ready;return[...this.jobs.values()].filter(job=>!projectId||job.request.projectId===projectId).map(job=>this.public(job));}

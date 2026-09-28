@@ -14,6 +14,7 @@ OnunSpace is an independent project and is not affiliated with or endorsed by Ma
 
 - Connect prompts and image references on a node canvas. Import images by upload, drag and drop, or paste.
 - Generate images and videos through your own OpenRouter or Higgsfield account. Model availability and supported inputs depend on the provider.
+- Toggle native audio on supported video models with the speaker button. The choice is saved with the project and generation history; models without audio support hide the control.
 - Edit motion layers, text, colors, styles, transforms, and keyframes. Use custom HTML/CSS/GSAP for code-driven scenes.
 - Export local motion compositions as MP4 or WebM using Chromium and FFmpeg.
 - Save projects locally and move them with portable `.onun` or ZIP archives, including referenced media.

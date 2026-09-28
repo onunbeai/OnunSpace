@@ -1,0 +1,5 @@
+.audio-toggle{display:inline-flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;min-height:32px;padding:0;border:0;border-radius:999px;background:#333;color:#929292;cursor:pointer}
+.audio-toggle[aria-pressed=true]{background:#414141;color:#eee}
+.audio-toggle:hover:not(:disabled){background:#4a4a4a;color:#fff}
+.audio-toggle:focus-visible{outline:2px solid #ff87f7;outline-offset:3px}
+.audio-toggle:disabled{opacity:.5;cursor:default}

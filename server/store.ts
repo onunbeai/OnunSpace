@@ -9,7 +9,7 @@ export const identifier = z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,100}$/);
 const nodeSchema = z.object({
   id: identifier, kind: z.enum(['reference', 'image', 'video', 'motion', 'text']), title: z.string().max(200),
   x: z.number().finite().min(-100000).max(100000), y: z.number().finite().min(-100000).max(100000), width: z.number().min(1).max(10000),
-  prompt: z.string().max(20000), model: z.string().max(200), provider: z.enum(['openrouter', 'higgsfield']), aspectRatio: z.string().max(20), resolution: z.string().max(20), count: z.number().int().min(1).max(4), duration: z.number().finite().min(1).max(30).optional(),
+  prompt: z.string().max(20000), model: z.string().max(200), provider: z.enum(['openrouter', 'higgsfield']), aspectRatio: z.string().max(20), resolution: z.string().max(20), count: z.number().int().min(1).max(4), duration: z.number().finite().min(1).max(30).optional(), generateAudio: z.boolean().optional(),
   status: z.enum(['none', 'review', 'progress', 'approved', 'rejected']), generatedFrom: identifier.optional(), media: z.string().max(12_000_000).optional(), artwork: z.enum(['brand', 'orb', 'poster', 'type', 'motion']).optional(),
   outputs: z.array(z.string().max(12_000_000)).max(4).optional(), generationStatus: z.enum(['idle', 'running', 'complete', 'error']).optional(), error: z.string().max(1000).optional(),
 });

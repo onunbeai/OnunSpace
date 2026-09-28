@@ -5,7 +5,8 @@ export type CatalogModel = {
   capabilities?: {
     requiredInputs?: string[]; referenceFields?: string[];
     aspectRatios?: string[]; resolutions?: string[]; counts?: number[]; durations?: (number | string)[]; durationRange?: { min?: number; max?: number; step?: number };
-    defaults?: { aspectRatio?: string; resolution?: string; count?: number; duration?: number };
+    audio?: boolean;
+    defaults?: { generateAudio?: boolean; aspectRatio?: string; resolution?: string; count?: number; duration?: number };
   };
 };
 export type ModelGroup = { key: string; model: CatalogModel; routes: CatalogModel[] };
@@ -25,12 +26,15 @@ export function videoDurationChoices(model: CatalogModel): number[] {
   return fallback && fallback >= 1 && fallback <= 30 ? [fallback] : [];
 }
 
-export function modelSettings(model: CatalogModel, current: { aspectRatio: string; resolution: string; count: number; duration?: number }) {
+export function modelSettings(model: CatalogModel, current: { aspectRatio: string; resolution: string; count: number; duration?: number; generateAudio?: boolean }) {
   const capabilities = model.capabilities;
   const choices = videoDurationChoices(model);
-  const duration = model.kind === 'video' ? choices.includes(current.duration!) ? current.duration : choices.includes(capabilities?.defaults?.duration!) ? capabilities!.defaults!.duration : choices[0] ?? (capabilities?.durations === undefined ? current.duration : undefined) : undefined;
+  const defaultDuration = capabilities?.defaults?.duration;
+  const duration = model.kind === 'video' ? choices.includes(current.duration!) ? current.duration : defaultDuration !== undefined && choices.includes(defaultDuration) ? defaultDuration : choices[0] ?? (capabilities?.durations === undefined ? current.duration : undefined) : undefined;
+  const generateAudio = model.kind === 'video' && capabilities?.audio ? current.generateAudio ?? capabilities.defaults?.generateAudio ?? true : undefined;
+  const audioSetting = generateAudio !== undefined || current.generateAudio !== undefined ? { generateAudio } : {};
   const durationSetting = duration !== undefined || current.duration !== undefined ? { duration } : {};
-  if (!capabilities) return { aspectRatio: current.aspectRatio, resolution: current.resolution, count: current.count, ...durationSetting };
+  if (!capabilities) return { aspectRatio: current.aspectRatio, resolution: current.resolution, count: current.count, ...durationSetting, ...audioSetting };
   const choose = <T extends string | number>(choices: T[] | undefined, value: T, fallback: T | undefined, automatic: T): T => {
     // An absent descriptor is unknown; an empty enum explicitly offers no control.
     // Clear values inherited from another provider instead of submitting a hidden, unsupported quality.
@@ -43,7 +47,7 @@ export function modelSettings(model: CatalogModel, current: { aspectRatio: strin
     aspectRatio: choose(capabilities.aspectRatios, current.aspectRatio, capabilities.defaults?.aspectRatio, '1:1'),
     resolution: choose(capabilities.resolutions, current.resolution, capabilities.defaults?.resolution, '1K'),
     count: choose(capabilities.counts, current.count, capabilities.defaults?.count, 1),
-    ...durationSetting,
+    ...durationSetting, ...audioSetting,
   };
 }
 

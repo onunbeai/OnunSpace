@@ -105,3 +105,19 @@ test('aborted discovery never proceeds to a generation POST',async()=>{
  await assert.rejects(providers.submit(input(),controller.signal),{name:'AbortError'});
  assert.equal(submissions,0);
 });
+
+test('video catalog audio support and first/last-frame references become native request parameters',()=>{
+ const catalog=describeOpenRouter({generate_audio:true,supported_resolutions:['720p'],supported_aspect_ratios:['16:9'],supported_durations:[5,10],supported_frame_images:['first_frame','last_frame']});
+ assert.equal(catalog.capabilities?.audio,true);
+ for(const generateAudio of [true,false]){
+  const result=buildOpenRouterInput(input({kind:'video',resolution:'720p',aspectRatio:'16:9',duration:10,count:1,generateAudio,references:['https://example.com/first.png','https://example.com/last.png']}),undefined,catalog.capabilities);
+  assert.equal(result.generate_audio,generateAudio);
+  assert.deepEqual(result.frame_images,[{type:'image_url',image_url:{url:'https://example.com/first.png'},frame_type:'first_frame'},{type:'image_url',image_url:{url:'https://example.com/last.png'},frame_type:'last_frame'}]);
+  assert.equal('input_references' in result,false);
+ }
+ const silent=describeOpenRouter({generate_audio:false});
+ assert.equal(silent.capabilities?.audio,false);
+ assert.equal('generate_audio' in buildOpenRouterInput(input({kind:'video',generateAudio:true}),undefined,silent.capabilities),false);
+ const descriptor=describeOpenRouter({supported_parameters:{generate_audio:{type:'boolean'}}});
+ assert.equal(buildOpenRouterInput(input({kind:'video',resolution:'1K',generateAudio:false}),descriptor.parameters,descriptor.capabilities).generate_audio,false);
+});

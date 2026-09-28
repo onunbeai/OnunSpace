@@ -141,7 +141,7 @@ export function useGeneration(project: Project, beforeStart: () => Promise<void>
       attempt.job = { id: requestId, status: 'queued', projectId: attempt.projectId, nodeId: node.id };
       let job: Job;
       try {
-        attempt.submission = boundedGenerationCall(signal => api<Job>('/generate', { method: 'POST', signal, body: JSON.stringify({ provider: node.provider, kind: node.kind === 'video' ? 'video' : 'image', model: node.model, prompt: node.prompt, aspectRatio: node.aspectRatio, resolution: node.resolution, count: node.count, ...(node.kind === 'video' && node.duration !== undefined ? { duration: node.duration } : {}), projectId: attempt.projectId, nodeId: node.id, references, requestId }) }), attempt.controller.signal);
+        attempt.submission = boundedGenerationCall(signal => api<Job>('/generate', { method: 'POST', signal, body: JSON.stringify({ provider: node.provider, kind: node.kind === 'video' ? 'video' : 'image', model: node.model, prompt: node.prompt, aspectRatio: node.aspectRatio, resolution: node.resolution, count: node.count, ...(node.kind === 'video' && node.duration !== undefined ? { duration: node.duration } : {}), ...(node.kind === 'video' && node.generateAudio !== undefined ? { generateAudio: node.generateAudio } : {}), projectId: attempt.projectId, nodeId: node.id, references, requestId }) }), attempt.controller.signal);
         job = await attempt.submission;
       } catch (error) {
         if ([400, 401, 403, 422].includes((error as {status?:number})?.status ?? 0)) attempt.job = undefined;

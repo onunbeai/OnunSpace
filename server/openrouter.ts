@@ -3,12 +3,14 @@ import {HttpError} from './errors.js';
 
 type Descriptor = {type:'enum';values:(string|number)[]} | {type:'range';min:number;max:number} | {type:'boolean'};
 export type OpenRouterParameters = Record<string,Descriptor>;
-type Capabilities = {aspectRatios?:string[];resolutions?:string[];counts?:number[];durations?:number[];referenceFields?:string[];requiredInputs?:string[]};
+type Capabilities = {audio?:boolean;defaults?:{generateAudio?:boolean};frameImages?:string[];aspectRatios?:string[];resolutions?:string[];counts?:number[];durations?:number[];referenceFields?:string[];requiredInputs?:string[]};
 const record=(value:unknown):value is Record<string,unknown>=>Boolean(value&&typeof value==='object'&&!Array.isArray(value));
 const strings=(value:unknown):string[]=>Array.isArray(value)?value.filter((item):item is string=>typeof item==='string'):[];
 
 // The image API uses descriptors, not the general chat API's parameter-name array.
 export function describeOpenRouter(item:Record<string,unknown>):{capabilities?:Capabilities;parameters?:OpenRouterParameters}{
+ const audio = item.generate_audio === true || (record(item.supported_parameters) && record(item.supported_parameters.generate_audio) && item.supported_parameters.generate_audio.type === 'boolean');
+ const audioCapabilities = audio ? {audio:true,defaults:{generateAudio:true}} : item.generate_audio === false ? {audio:false} : {};
  let parameters:OpenRouterParameters|undefined;
  if(record(item.supported_parameters)){
   const parsed:OpenRouterParameters={};let valid=true;
@@ -31,13 +33,13 @@ export function describeOpenRouter(item:Record<string,unknown>):{capabilities?:C
   };
   const references=parameters.input_references;
   const acceptsReferences=Boolean(references&&(references.type!=='range'||references.max>0));
-  return{parameters,capabilities:{aspectRatios:options('aspect_ratio'),resolutions:options('resolution'),counts:parameters.n?numbers('n',4):[1],...(parameters.duration?{durations:numbers('duration',30)}:{}),referenceFields:acceptsReferences?['input_references']:[],requiredInputs:references?.type==='range'&&references.min>0?['input_references']:[]}};
+  return{parameters,capabilities:{...audioCapabilities,aspectRatios:options('aspect_ratio'),resolutions:options('resolution'),counts:parameters.n?numbers('n',4):[1],...(parameters.duration?{durations:numbers('duration',30)}:{}),referenceFields:acceptsReferences?['input_references']:[],requiredInputs:references?.type==='range'&&references.min>0?['input_references']:[]}};
  }
  // Older catalogs still expose these arrays. A string[] of parameter names alone
  // cannot be used to infer allowable values or unsupported fields.
  const aspectRatios=strings(item.supported_aspect_ratios),resolutions=strings(item.supported_resolutions);
  const durations=Array.isArray(item.supported_durations)?item.supported_durations.filter(value=>typeof value==='number'||typeof value==='string').map(Number).filter(value=>Number.isFinite(value)&&value>0):[];
- const capabilities={...(aspectRatios.length?{aspectRatios}:{}),...(resolutions.length?{resolutions}:{}),...(durations.length?{durations}:{})};
+ const capabilities={...audioCapabilities,...(Array.isArray(item.supported_frame_images)?{frameImages:strings(item.supported_frame_images)}:{}),...(aspectRatios.length?{aspectRatios}:{}),...(resolutions.length?{resolutions}:{}),...(durations.length?{durations}:{})};
  return Object.keys(capabilities).length?{capabilities}:{};
 }
 
@@ -55,6 +57,7 @@ function canonical(descriptor:Descriptor|undefined,value:string|number,message:s
 
 export function buildOpenRouterInput(input:GenerationRequest,parameters?:OpenRouterParameters,capabilities?:Capabilities){
  const body:Record<string,unknown>={model:input.model,prompt:input.prompt};
+ if(input.kind==='video'&&input.generateAudio!==undefined&&(parameters?.generate_audio?.type==='boolean'||capabilities?.audio))body.generate_audio=input.generateAudio;
  const references=input.references.map(url=>({type:'image_url',image_url:{url}}));
  const resolution=normalizedResolution(input.resolution);
  const invalidResolution='Esta resolução não é aceita pelo modelo selecionado. Escolha uma resolução disponível.';
@@ -86,6 +89,9 @@ export function buildOpenRouterInput(input:GenerationRequest,parameters?:OpenRou
  body.aspect_ratio=canonical(enumFor(capabilities?.aspectRatios),input.aspectRatio,invalidAspect);
  if(input.kind==='image'){body.n=input.count;body.output_format='png';}
  else body.duration=canonical(capabilities?.durations?.length?{type:'enum',values:capabilities.durations}:undefined,input.duration??5,'Esta duração não é aceita pelo modelo selecionado.');
- if(references.length)body.input_references=references;
+ if(references.length){
+  if(input.kind==='video'&&capabilities?.frameImages?.includes('first_frame')&&references.length<=2&&(references.length===1||capabilities.frameImages.includes('last_frame')))body.frame_images=references.map((reference,index)=>({...reference,frame_type:index===0?'first_frame':'last_frame'}));
+  else body.input_references=references;
+ }
  return body;
 }

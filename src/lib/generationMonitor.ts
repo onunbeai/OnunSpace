@@ -60,7 +60,7 @@ export async function monitorGeneration<T extends MonitoredJob>(initial: T, opti
       signal.throwIfAborted();
       const status = (error as { status?: number })?.status;
       const permanent = status != null && status >= 400 && status < 500 && ![408, 429].includes(status);
-      if (permanent || ++failures >= (options.maxFailures ?? 4)) throw new Error(complete ? resultSyncError : trackingError);
+      if (permanent || ++failures >= (options.maxFailures ?? 4)) throw new Error(complete ? resultSyncError : trackingError, { cause: error });
       // Retry synchronization or status lookup only; never submit another paid generation.
       if (complete) await pause();
     }

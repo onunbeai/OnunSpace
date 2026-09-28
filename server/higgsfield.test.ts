@@ -124,3 +124,35 @@ test('OpenRouter parameter names are not mistaken for authoritative output optio
  assert.equal('capabilities' in catalog.models[0],false);
  assert.deepEqual(catalog.models[1].capabilities,{aspectRatios:['1:1','16:9'],resolutions:['1K','2K'],durations:[5,10]});
 });
+
+test('all supported video routes expose and submit their native audio toggle, including false',()=>{
+ let tested=0;
+ for(const item of entries){
+  const info=describeHiggsfield(item);
+  if(item.kind!=='video'||!info.supported)continue;
+  const p=item.schema.properties;
+  assert.equal(info.capabilities.audio,p.generate_audio?.type==='boolean'||p.sound?.enum?.includes('on')===true,item.id);
+  if(!info.capabilities.audio)continue;
+  const refs=info.capabilities.requiredInputs.some(name=>info.capabilities.referenceFields.includes(name))?[reference]:[];
+  const settings={...base,aspectRatio:p.aspect_ratio?.default??p.aspect_ratio?.enum?.[0]??'16:9',resolution:p.resolution?.default??p.resolution?.enum?.[0]??'1K',duration:Number(p.duration?.default??p.duration?.enum?.[0]??5),references:refs};
+  for(const generateAudio of [true,false]){const body=buildHiggsfieldInput(item,{...settings,generateAudio});assert.equal(body[p.generate_audio?'generate_audio':'sound'],p.generate_audio?generateAudio:generateAudio?'on':'off',item.id);}
+  tested++;
+ }
+ assert.ok(tested>20);
+});
+
+test('signed reference upload sends the exact Content-Length required by object storage gateways',async()=>{
+ const png=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),Buffer.alloc(3000)]);
+ let submitted=0;
+ const provider=new Providers(credentials(),async(url,init)=>{
+  if(String(url).endsWith('/files/generate-upload-url'))return Response.json({upload_url:'https://storage.example/signed-upload',public_url:reference,upload_headers:{'Content-Type':'image/png'}});
+  if(String(url)==='https://storage.example/signed-upload'){
+   const headers=new Headers(init?.headers);
+   // The production HTTPS gateway streams bytes; it cannot infer a length like fetch does.
+   return new Response(null,{status:headers.get('Content-Length')===String(png.length)?200:411});
+  }
+  submitted++;return Response.json({request_id:'test-accepted',status:'queued'});
+ });
+ const result=await provider.submit(generationSchema.parse({provider:'higgsfield',kind:'video',model:'bytedance/seedance-2.5/image-to-video',prompt:base.prompt,resolution:'720p',duration:10,generateAudio:true,references:[`data:image/png;base64,${png.toString('base64')}`]}),new AbortController().signal);
+ assert.equal(result.request_id,'test-accepted');assert.equal(submitted,1);
+});

@@ -121,7 +121,7 @@ export default function App() {
             if (entry) {
                 setCatalogModels(models => [...models.filter(model => model.id !== entry.id || model.provider !== entry.provider), entry]);
                 const supportedSettings = modelSettings(entry, node);
-                if (supportedSettings.aspectRatio !== node.aspectRatio || supportedSettings.resolution !== node.resolution || supportedSettings.count !== node.count || supportedSettings.duration !== node.duration) {
+                if (supportedSettings.aspectRatio !== node.aspectRatio || supportedSettings.resolution !== node.resolution || supportedSettings.count !== node.count || supportedSettings.duration !== node.duration || supportedSettings.generateAudio !== node.generateAudio) {
                     patch(node.id, supportedSettings); setInspected(node.id); setToast(t('Opções ajustadas às capacidades do modelo. Confira antes de gerar.')); return;
                 }
             }

@@ -31,6 +31,7 @@ function safeDetail(detail: string, authorization?: string): string {
     .replace(/\b(?:Bearer|Key)\s+\S+/gi, '[credencial omitida]')
     .replace(/\b(?:api[_ -]?key|api[_ -]?secret|authorization|access[_ -]?token|token|password|secret)\s*[=:]\s*(?:"[^"]*"|'[^']*'|\S+)/gi, '[credencial omitida]')
     .replace(/\b(?:sk-|hf_)[\w-]+|\b[A-Za-z0-9_+/=-]{32,}\b/g, '[identificador omitido]')
+    // eslint-disable-next-line no-control-regex -- Remove control characters from untrusted provider messages.
     .replace(/[\u0000-\u001f\u007f<>]/g, ' ')
     .replace(/\s+/g, ' ').trim().slice(0, 360);
 }

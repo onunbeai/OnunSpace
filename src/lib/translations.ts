@@ -20,6 +20,10 @@ export const english: Record<string, string> = {
   "Acompanhamento cancelado. Não foi possível confirmar o cancelamento no provedor; ele pode continuar processando e cobrando esta solicitação.": "Tracking cancelled. Provider cancellation could not be confirmed; it may continue processing and charging for this request.",
 
   "Duração do vídeo": "Video duration",
+  "Gerar áudio": "Generate audio",
+  "Ativar áudio": "Enable audio",
+  "Desativar áudio": "Mute audio",
+  "Escolher modelo": "Choose model",
   "Cancelando geração…": "Cancelling generation…",
   "Não foi possível cancelar. Tente novamente.": "Could not cancel. Try again.",
   "Acompanhamento cancelado. O provedor pode continuar processando e cobrando esta solicitação.": "Tracking cancelled. The provider may continue processing and charging for this request.",

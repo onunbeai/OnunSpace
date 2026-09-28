@@ -51,3 +51,12 @@ test('Range-based video durations expose supported seconds without inventing cho
  assert.deepEqual(videoDurationChoices({...video,capabilities:{durations:[]}}),[]);
  assert.deepEqual(videoDurationChoices({...video,capabilities:undefined}),[]);
 });
+
+test('audio follows model defaults, preserves explicit off, and clears on unsupported models',()=>{
+ const video:CatalogModel={...route('higgsfield',{audio:true,defaults:{generateAudio:false}}),kind:'video'};
+ assert.equal(modelSettings(video,current).generateAudio,false);
+ assert.equal(modelSettings(video,{...current,generateAudio:true}).generateAudio,true);
+ assert.equal(modelSettings({...video,capabilities:{audio:true,defaults:{generateAudio:true}}},{...current,generateAudio:false}).generateAudio,false);
+ assert.equal(modelSettings({...video,capabilities:{audio:false}},{...current,generateAudio:true}).generateAudio,undefined);
+ assert.equal(modelSettings({...video,kind:'image'},{...current,generateAudio:true}).generateAudio,undefined);
+});

@@ -13,6 +13,7 @@ export const generationSchema = z.object({
   aspectRatio: z.string().regex(/^(?:\d{1,2}:\d{1,2}|auto|adaptive)$/).default('16:9'),
   resolution: z.string().max(20).default('1K'),
   duration: z.number().finite().min(1).max(30).optional(),
+  generateAudio: z.boolean().optional(),
   count: z.number().int().min(1).max(4).default(1),
   references: z.array(z.string().max(12_000_000).refine(value => /^https:\/\//.test(value) || /^data:image\/(png|jpeg|webp);base64,/.test(value) || /^\/api\/(?:projects\/[a-zA-Z0-9_-]+\/)?assets\/[a-zA-Z0-9_-]+\.(png|jpe?g|webp)$/.test(value))).max(8).default([]),
   projectId: z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,100}$/).optional(),
@@ -147,8 +148,10 @@ export class Providers {
       headers.set(name,value);
     }
     if(headers.get('Content-Type')!==data[1])throw new HttpError(502,'O formato do upload não corresponde à referência.','invalid_upload');
+    // Signed storage PUTs require a known byte length, including streamed transports.
+    headers.set('Content-Length',String(bytes.byteLength));
     const response=await this.request(uploadUrl,{method:'PUT',headers,body:bytes,redirect:'error',signal:AbortSignal.any([signal,AbortSignal.timeout(120000)])});
-    await response.body?.cancel();if(!response.ok)throw new HttpError(502,'Não foi possível carregar a referência no provedor.','upload_failed');
+    await response.body?.cancel();if(!response.ok)throw new HttpError(502,`Não foi possível enviar a referência ao provedor (HTTP ${response.status}).`,'upload_failed');
     return publicUrl;
   }
 
