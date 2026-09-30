@@ -191,7 +191,7 @@ export default function App() {
             setToast(t("Nó salvo como JSON. Estudos visuais são exemplos editáveis."));
         }
     } };
-    useEffect(() => { const handler = (e: KeyboardEvent) => { if (connection === 'loading' || loadError || mode === 'projects' || e.defaultPrevented || (e.target as HTMLElement).closest('input,textarea,[contenteditable=true],[role=dialog],[role=menu]'))
+    useEffect(() => { const handler = (e: KeyboardEvent) => { if (connection === 'loading' || loadError || mode === 'projects' || e.defaultPrevented || (e.target as HTMLElement).closest('input,textarea,[contenteditable=true],[role=dialog],[role=menu],.onun-video-player'))
         return; if (e.key === 'Escape') {
         setInspected(null);
         setSelected(null);

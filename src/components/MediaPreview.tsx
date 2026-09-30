@@ -4,13 +4,14 @@ import type {CanvasNode} from '../../shared/project';
 import {Artwork} from '../features/canvas/Artwork';
 import {Icon} from './Icon';
 import {IconButton} from './ui';
+import {VideoPlayer} from './media/VideoPlayer';
 import './media-preview.css';
 import {useI18n} from '../lib/i18n';
 
 const artworkHeight={brand:218,orb:285,type:305,motion:231,poster:360};
 
 export function MediaPreview({node,onClose}:{node:CanvasNode;onClose:()=>void}){
- const{t}=useI18n();
+ const{t,locale}=useI18n();
  const viewportRef=useRef<HTMLDivElement>(null);
  const center=useRef({x:.5,y:.5});
  const[viewport,setViewport]=useState({width:800,height:600});
@@ -47,13 +48,13 @@ export function MediaPreview({node,onClose}:{node:CanvasNode;onClose:()=>void}){
  };
  return <Dialog.Root open onOpenChange={open=>!open&&onClose()}><Dialog.Portal>
   <Dialog.Overlay className="media-preview-overlay"/>
-  <Dialog.Content className="media-preview" aria-describedby={undefined} onKeyDown={event=>{if(event.target instanceof HTMLVideoElement)return;if(event.key==='+'||event.key==='='){event.preventDefault();changeZoom(zoom*1.25);}if(event.key==='-'){event.preventDefault();changeZoom(zoom/1.25);}if(event.key==='0'){event.preventDefault();fitView();}}}>
+  <Dialog.Content className="media-preview" aria-describedby={undefined} onKeyDown={event=>{if((event.target as HTMLElement).closest('.onun-video-player,input,textarea,select'))return;if(event.key==='+'||event.key==='='){event.preventDefault();changeZoom(zoom*1.25);}if(event.key==='-'){event.preventDefault();changeZoom(zoom/1.25);}if(event.key==='0'){event.preventDefault();fitView();}}}>
    <header className="media-preview-heading"><Dialog.Title>{node.title}</Dialog.Title><Dialog.Close asChild><button className="icon-button" aria-label={t("Fechar visualização")}><Icon name="close" size={19}/></button></Dialog.Close></header>
    <div className="media-preview-stage" ref={observeStage}>
    <div className="media-preview-viewport" ref={viewportRef} tabIndex={0} role="region" aria-label={t("Área de visualização")}>
     <div className="media-preview-surface" style={{width:Math.max(viewport.width,width+64),height:Math.max(viewport.height,height+64)}}>
      {failed?<div className="media-preview-error" role="alert"><Icon name={node.kind==='video'?'video':'image'} size={30}/><span>{node.kind==='video'?t("Vídeo indisponível"):t("Imagem indisponível")}</span></div>:<div className="media-preview-frame" style={{width,height}}>
-      {node.media?(node.kind==='video'?<video src={node.media} controls preload="metadata" aria-label={node.title} onLoadedMetadata={event=>{const video=event.currentTarget;if(video.videoWidth&&video.videoHeight)setSize({width:video.videoWidth,height:video.videoHeight});}} onError={()=>setFailed(true)}/>:<img src={node.media} alt={node.title} draggable={false} onLoad={event=>setSize({width:event.currentTarget.naturalWidth||1,height:event.currentTarget.naturalHeight||1})} onError={()=>setFailed(true)}/>):<div className="media-preview-artwork" style={{width:size.width,height:size.height,transform:`scale(${scale})`}}>{node.kind==='text'?<div className="media-preview-note">{node.prompt}</div>:<Artwork node={node}/>}</div>}
+      {node.media?(node.kind==='video'?<VideoPlayer src={node.media} title={node.title} locale={locale==='en'?'en':'pt'} preload="metadata" onLoadedMetadata={event=>{const video=event.currentTarget;if(video.videoWidth&&video.videoHeight)setSize({width:video.videoWidth,height:video.videoHeight});}} onError={()=>setFailed(true)}/>:<img src={node.media} alt={node.title} draggable={false} onLoad={event=>setSize({width:event.currentTarget.naturalWidth||1,height:event.currentTarget.naturalHeight||1})} onError={()=>setFailed(true)}/>):<div className="media-preview-artwork" style={{width:size.width,height:size.height,transform:`scale(${scale})`}}>{node.kind==='text'?<div className="media-preview-note">{node.prompt}</div>:<Artwork node={node}/>}</div>}
      </div>}
     </div>
    </div>

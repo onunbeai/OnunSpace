@@ -14,6 +14,8 @@ AI-provider logos identify their respective providers and remain the property of
 
 The Brazilian and US flags come from `flag-icons`; their existing [MIT license](public/assets/flags/LICENSE) and [provenance record](public/assets/flags/PROVENANCE.md) are retained.
 
+The shared video player's icons use the original Solar vector paths by 480 Design, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), generated from the MIT-licensed `@solar-icons/react` package. The player includes the [Solar attribution and license](src/components/media/SOLAR-LICENSE.txt); it requires no additional icon package at runtime.
+
 ## Fonts
 
 The public source distribution uses Inter regular/medium and Fragment Mono, under the SIL Open Font License 1.1. Their license texts are included beside the font files:

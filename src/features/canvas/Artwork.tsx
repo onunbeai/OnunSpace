@@ -1,9 +1,12 @@
 import {Icon} from '../../components/Icon';
+import {VideoPlayer} from '../../components/media/VideoPlayer';
+import {useI18n} from '../../lib/i18n';
 import type {CanvasNode} from '../../../shared/project';
-export function Artwork({node}:{node:CanvasNode}) {
+export function Artwork({node,thumbnail=false}:{node:CanvasNode;thumbnail?:boolean}) {
+  const {locale}=useI18n();
   const result = 'generatedFrom' in node && Boolean(node.generatedFrom);
   const mediaStyle = result ? {height:'auto',aspectRatio:/^\d+:\d+$/.test(node.aspectRatio)?node.aspectRatio.replace(':',' / '):'1',objectFit:'contain' as const} : undefined;
-  if(node.media) return node.kind==='video'?<video className="node-media" style={mediaStyle} src={node.media} controls preload="metadata"/>:<img className="node-media" style={mediaStyle} src={node.media} alt={node.title} draggable={false}/>;
+  if(node.media) return node.kind==='video'?(thumbnail?<video className="node-media" style={mediaStyle} src={node.media} muted playsInline preload="metadata" aria-hidden="true"/>:<VideoPlayer className="node-media" style={mediaStyle} src={node.media} title={node.title} locale={locale==='en'?'en':'pt'} objectFit={result?'contain':'cover'} preload="metadata"/>):<img className="node-media" style={mediaStyle} src={node.media} alt={node.title} draggable={false}/>;
   if(node.artwork==='brand')return <div className="artwork art-brand"><span className="art-eyebrow">A CREATIVE STATE OF MIND</span><img src="/assets/onun-logo.svg" alt="Onun"/><div className="brand-art-footer"><span>be AI. be you.</span><span>® 2026</span></div></div>;
   if(node.artwork==='orb')return <div className="artwork art-orb"><span className="art-eyebrow">ONUN / FORM EXPLORATIONS</span><div className="sculpture"><i/><i/><i/><i/><i/><i/><i/></div><div className="orb-footer"><span>Beyond<br/>the expected.</span><span>01—∞</span></div></div>;
   if(node.artwork==='type')return <div className="artwork art-type"><img src="/assets/onun-symbol.svg" alt=""/><span className="type-main">make<br/><em>room</em><br/>for more.</span><span className="art-eyebrow">CRIATIVIDADE, SEM PONTO FINAL.</span></div>;

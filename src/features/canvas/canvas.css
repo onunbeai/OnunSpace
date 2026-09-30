@@ -30,3 +30,7 @@
 .art-empty{background:#202020;color:#686868}
 
 .canvas-import-feedback{position:absolute;z-index:60;left:50%;top:24px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:12px 18px;border:1px solid #5c4359;border-radius:999px;background:#242024f5;color:#f4d7ef;font-size:13px;pointer-events:none;box-shadow:0 8px 28px #0004}.canvas-import-feedback.is-drop-target{top:50%;transform:translate(-50%,-50%);padding:22px 28px;border-color:var(--pink);border-style:dashed;border-radius:18px;background:#252025f5}.canvas-import-error{position:absolute;z-index:61;left:50%;top:24px;transform:translateX(-50%);max-width:min(520px,85%);padding:12px 18px;border:1px solid #65434b;border-radius:12px;background:#292124;color:#f2c4cb;font-size:13px;pointer-events:none}
+
+.node-media.onun-video-player{touch-action:manipulation}
+.node-media.onun-video-player button:focus-visible{outline:2px solid #ff87f7;outline-offset:2px}
+.onun-video-player+.node-preview-button{top:12px;bottom:auto;left:12px;right:auto}
